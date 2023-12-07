@@ -1,0 +1,23 @@
+{
+  "devnet": {
+    "databases": {
+      "stablenet": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "USER": "server",
+        "PASSWORD": "server",
+        "HOST": "127.0.0.1",
+        "PORT": "5432",
+        "NAME": "stablenet_dev"
+      },
+      "explorer": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "PORT": "5437",
+        "USER": "l2_explorer_user",
+        "PASSWORD": "l2_explorer_password",
+        "NAME": "l2_explorer_db",
+        "HOST": "172.18.36.174"
+      }
+    },
+    "start_day": "2023-11-08"
+  }
+}
