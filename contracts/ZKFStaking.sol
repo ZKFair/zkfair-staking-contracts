@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-// 版本需要统一一下, hardhat配置文件里面的版本和这里的版本不一致
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
