@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "./MerkleProof.sol";
+import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 contract ZKFRewardContract is OwnableUpgradeable {
     bytes32 private merkleRoot;
@@ -30,7 +30,15 @@ contract ZKFRewardContract is OwnableUpgradeable {
     address public rewardSponsor;
     uint256 public constant period = 1 days;
 
-    constructor(address _proposalAuthority, address _reviewAuthority, address _rewardSponsor) public {
+    modifier onlyValidAddress(address addr) {
+        require(addr != address(0), "Illegal address");
+        _;
+    }
+
+    constructor(address _proposalAuthority, address _reviewAuthority, address _rewardSponsor) {
+        onlyValidAddress(_proposalAuthority);
+        onlyValidAddress(_reviewAuthority);
+        onlyValidAddress(_rewardSponsor);
         proposalAuthority = _proposalAuthority;
         reviewAuthority = _reviewAuthority;
         rewardSponsor = _rewardSponsor;
@@ -42,16 +50,19 @@ contract ZKFRewardContract is OwnableUpgradeable {
     }
 
     function setProposalAuthority(address _account) public {
+        onlyValidAddress(_account);
         require(msg.sender == proposalAuthority);
         proposalAuthority = _account;
     }
 
     function setReviewAuthority(address _account) public {
+        onlyValidAddress(_account);
         require(msg.sender == reviewAuthority);
         reviewAuthority = _account;
     }
 
     function setRewardSponsor(address _account) public {
+        onlyValidAddress(_account);
         require(msg.sender == rewardSponsor);
         rewardSponsor = _account;
     }
@@ -66,8 +77,8 @@ contract ZKFRewardContract is OwnableUpgradeable {
         balanceUpdatedAt = block.timestamp;
     }
 
-    function _verify(address addr, uint256 amount, bytes32[] memory proof) internal {
-        bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(addr, amount))));
+    function _verify(address addr, uint256 amount, bytes32[] memory proof) view internal {
+        bytes32 leaf = keccak256(abi.encodePacked(addr, amount));
         require(MerkleProof.verify(proof, merkleRoot, leaf), "Invalid proof");
     }
 
@@ -100,9 +111,8 @@ contract ZKFRewardContract is OwnableUpgradeable {
             bytes32 oldRoot = merkleRoot;
             merkleRoot = pendingMerkleRoot;
             rootUpdatedAt = block.timestamp;
-            UpdateMerkleRoot(oldRoot,merkleRoot,block.timestamp);
+            emit UpdateMerkleRoot(oldRoot, merkleRoot, block.timestamp);
         }
         delete pendingMerkleRoot;
     }
-
 }
