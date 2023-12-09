@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
+// 版本需要统一一下, hardhat配置文件里面的版本和这里的版本不一致
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 contract StakingContract is OwnableUpgradeable {
-    using SafeMath for uint256;
 
     struct DepositInfo {
         address depositor;
@@ -55,11 +54,11 @@ contract StakingContract is OwnableUpgradeable {
         __Ownable_init_unchained();
     }
 
-    function _calculateWeight(uint256 _amount, uint256 _duration) internal returns (uint256) {
+    function _calculateWeight(uint256 _amount, uint256 _duration)  internal view returns (uint256) {
         return _amount * durations[_duration].coefficient;
     }
 
-    function calculateDepositorWeight(address depositor) public returns (uint256 unaffectedWeight) {
+    function calculateDepositorWeight(address depositor) public view returns (uint256 unaffectedWeight) {
         uint256 today = block.timestamp - block.timestamp % period;
 
         for (uint8 i = 1; i < 9; i++) {
@@ -79,10 +78,10 @@ contract StakingContract is OwnableUpgradeable {
         bool result = token.transferFrom(msg.sender, address(this), _amount);
         require(result, 'ZKFStaking: ZKF transfer failed.');
         // Get current account info
-        DepositInfo memory totalDepositInfo = deposits[msg.sender][0];
-        Weight memory totalWeight = weights[msg.sender][0];
-        DepositInfo memory depositInfo = deposits[msg.sender][durations[_duration].index];
-        Weight memory weight = weights[msg.sender][durations[_duration].index];
+        DepositInfo storage totalDepositInfo = deposits[msg.sender][0];
+        Weight storage totalWeight = weights[msg.sender][0];
+        DepositInfo storage depositInfo = deposits[msg.sender][durations[_duration].index];
+        Weight storage weight = weights[msg.sender][durations[_duration].index];
         totalDepositInfo = DepositInfo({
             depositor: msg.sender,
             amount: _amount + totalDepositInfo.amount,
@@ -115,7 +114,7 @@ contract StakingContract is OwnableUpgradeable {
 
     function withdraw(uint256 _duration) external {
         require(durations[_duration].index != 0, "Invalid duration");
-        DepositInfo storage depositInfo = deposits[msg.sender][durations[_duration].index];
+        DepositInfo memory depositInfo = deposits[msg.sender][durations[_duration].index];
         require(depositInfo.depositor == msg.sender, "Unauthorized withdrawal");
         require(depositInfo.amount > 0, "empty amount");
         require(block.timestamp >= depositInfo.timestamp + (depositInfo.duration * period), "Deposit is not matured yet");
