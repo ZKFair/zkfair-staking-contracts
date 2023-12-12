@@ -24,6 +24,9 @@ async function main() {
       ],
       {
       constructorArgs: [
+        process.env.PROPOSAL_AUTHORITY,
+        process.env.REVIEW_AUTHORITY,
+        process.env.REWARD_SPONSOR,
       ],
       unsafeAllow: ['constructor', 'state-variable-immutable'],
     });

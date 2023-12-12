@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -24,10 +24,9 @@ contract StakingContract is OwnableUpgradeable {
         uint256 coefficient;
     }
 
-    uint256 public period = 1 days;
-
-    mapping(address => DepositInfo[9]) public deposits;
+    uint256 public constant period = 1 days;
     IERC20 public token;
+    mapping(address => DepositInfo[9]) public deposits;
     mapping(uint256 => Duration) public durations;
 
     mapping(address => Weight[9]) public weights;
@@ -77,10 +76,10 @@ contract StakingContract is OwnableUpgradeable {
         bool result = token.transferFrom(msg.sender, address(this), _amount);
         require(result, 'ZKFStaking: ZKF transfer failed.');
         // Get current account info
-        DepositInfo storage totalDepositInfo = deposits[msg.sender][0];
-        Weight storage totalWeight = weights[msg.sender][0];
-        DepositInfo storage depositInfo = deposits[msg.sender][durations[_duration].index];
-        Weight storage weight = weights[msg.sender][durations[_duration].index];
+        DepositInfo memory totalDepositInfo = deposits[msg.sender][0];
+        Weight memory totalWeight = weights[msg.sender][0];
+        DepositInfo memory depositInfo = deposits[msg.sender][durations[_duration].index];
+        Weight memory weight = weights[msg.sender][durations[_duration].index];
         totalDepositInfo = DepositInfo({
             depositor: msg.sender,
             amount: _amount + totalDepositInfo.amount,
@@ -88,6 +87,7 @@ contract StakingContract is OwnableUpgradeable {
             timestamp: block.timestamp,
             nonce: totalDepositInfo.nonce + 1
         });
+
         totalWeight.accountWeight -= weight.accountWeight;
         depositInfo = DepositInfo({
             depositor: msg.sender,
@@ -96,10 +96,12 @@ contract StakingContract is OwnableUpgradeable {
             timestamp: block.timestamp,
             nonce: depositInfo.nonce + 1
         });
+
         weight = Weight({
             accountWeight: _calculateWeight(depositInfo.amount, depositInfo.duration),
             update_at: block.timestamp
         });
+
         totalWeight.accountWeight += weight.accountWeight;
         totalWeight.update_at = block.timestamp;
         deposits[msg.sender][0] = totalDepositInfo;
