@@ -1,18 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.20;
 
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "./MerkleProof.sol";
+import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 contract ZKFRewardContract is OwnableUpgradeable {
-    bytes32 private merkleRoot;
-    bytes32 public pendingMerkleRoot;
-
-    // admin address which can propose adding a new merkle root
-    address public proposalAuthority;
-    // admin address which approves or rejects a proposed merkle root
-    address public reviewAuthority;
-
     event UpdateMerkleRoot(bytes32 indexed oldRoot, bytes32 indexed newRoot, uint256 indexed timestamp);
     event ClaimReward(address indexed recipient, uint256 indexed amount, uint256 indexed timestamp, uint256 totalClaimed);
     event UpdateBalance(uint256 indexed amount, uint256 balance, uint256 totalDistributed, uint256 indexed timestamp);
@@ -22,15 +14,29 @@ contract ZKFRewardContract is OwnableUpgradeable {
         uint256 timestamp;
     }
 
-    mapping(address => ClaimInfo) public claims;
+    uint256 public constant period = 1 days;
+
+    bytes32 private merkleRoot;
+    bytes32 public pendingMerkleRoot;
+
+    // admin address which can propose adding a new merkle root
+    address public proposalAuthority;
+    // admin address which approves or rejects a proposed merkle root
+    address public reviewAuthority;
 
     uint256 public totalDistributed;
     uint256 public balanceUpdatedAt;
     uint256 public rootUpdatedAt;
     address public rewardSponsor;
-    uint256 public constant period = 1 days;
+    
+    mapping(address => ClaimInfo) public claims;
 
-    constructor(address _proposalAuthority, address _reviewAuthority, address _rewardSponsor) public {
+    modifier onlyValidAddress(address addr) {
+        require(addr != address(0), "Illegal address");
+        _;
+    }
+
+    constructor(address _proposalAuthority, address _reviewAuthority, address _rewardSponsor) onlyValidAddress(_proposalAuthority) onlyValidAddress(_reviewAuthority) onlyValidAddress(_rewardSponsor) {
         proposalAuthority = _proposalAuthority;
         reviewAuthority = _reviewAuthority;
         rewardSponsor = _rewardSponsor;
@@ -41,17 +47,17 @@ contract ZKFRewardContract is OwnableUpgradeable {
         __Ownable_init_unchained();
     }
 
-    function setProposalAuthority(address _account) public {
+    function setProposalAuthority(address _account) onlyValidAddress(_account) public {
         require(msg.sender == proposalAuthority);
         proposalAuthority = _account;
     }
 
-    function setReviewAuthority(address _account) public {
+    function setReviewAuthority(address _account) onlyValidAddress(_account) public {
         require(msg.sender == reviewAuthority);
         reviewAuthority = _account;
     }
 
-    function setRewardSponsor(address _account) public {
+    function setRewardSponsor(address _account) onlyValidAddress(_account) public {
         require(msg.sender == rewardSponsor);
         rewardSponsor = _account;
     }
@@ -66,8 +72,8 @@ contract ZKFRewardContract is OwnableUpgradeable {
         balanceUpdatedAt = block.timestamp;
     }
 
-    function _verify(address addr, uint256 amount, bytes32[] memory proof) internal {
-        bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(addr, amount))));
+    function _verify(address addr, uint256 amount, bytes32[] memory proof) view internal {
+        bytes32 leaf = keccak256(abi.encodePacked(addr, amount));
         require(MerkleProof.verify(proof, merkleRoot, leaf), "Invalid proof");
     }
 
@@ -100,9 +106,8 @@ contract ZKFRewardContract is OwnableUpgradeable {
             bytes32 oldRoot = merkleRoot;
             merkleRoot = pendingMerkleRoot;
             rootUpdatedAt = block.timestamp;
-            UpdateMerkleRoot(oldRoot,merkleRoot,block.timestamp);
+            emit UpdateMerkleRoot(oldRoot, merkleRoot, block.timestamp);
         }
         delete pendingMerkleRoot;
     }
-
 }

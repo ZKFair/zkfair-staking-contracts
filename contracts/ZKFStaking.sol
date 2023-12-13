@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
 contract StakingContract is OwnableUpgradeable {
-    using SafeMath for uint256;
 
     struct DepositInfo {
         address depositor;
@@ -26,10 +24,9 @@ contract StakingContract is OwnableUpgradeable {
         uint256 coefficient;
     }
 
-    uint256 public period = 1 days;
-
-    mapping(address => DepositInfo[9]) public deposits;
+    uint256 public constant period = 1 days;
     IERC20 public token;
+    mapping(address => DepositInfo[9]) public deposits;
     mapping(uint256 => Duration) public durations;
 
     mapping(address => Weight[9]) public weights;
@@ -55,11 +52,11 @@ contract StakingContract is OwnableUpgradeable {
         __Ownable_init_unchained();
     }
 
-    function _calculateWeight(uint256 _amount, uint256 _duration) internal returns (uint256) {
+    function _calculateWeight(uint256 _amount, uint256 _duration) internal view returns (uint256) {
         return _amount * durations[_duration].coefficient;
     }
 
-    function calculateDepositorWeight(address depositor) public returns (uint256 unaffectedWeight) {
+    function calculateDepositorWeight(address depositor) public view returns (uint256 unaffectedWeight) {
         uint256 today = block.timestamp - block.timestamp % period;
 
         for (uint8 i = 1; i < 9; i++) {
@@ -90,6 +87,7 @@ contract StakingContract is OwnableUpgradeable {
             timestamp: block.timestamp,
             nonce: totalDepositInfo.nonce + 1
         });
+
         totalWeight.accountWeight -= weight.accountWeight;
         depositInfo = DepositInfo({
             depositor: msg.sender,
@@ -98,10 +96,12 @@ contract StakingContract is OwnableUpgradeable {
             timestamp: block.timestamp,
             nonce: depositInfo.nonce + 1
         });
+
         weight = Weight({
             accountWeight: _calculateWeight(depositInfo.amount, depositInfo.duration),
             update_at: block.timestamp
         });
+
         totalWeight.accountWeight += weight.accountWeight;
         totalWeight.update_at = block.timestamp;
         deposits[msg.sender][0] = totalDepositInfo;
@@ -115,7 +115,7 @@ contract StakingContract is OwnableUpgradeable {
 
     function withdraw(uint256 _duration) external {
         require(durations[_duration].index != 0, "Invalid duration");
-        DepositInfo storage depositInfo = deposits[msg.sender][durations[_duration].index];
+        DepositInfo memory depositInfo = deposits[msg.sender][durations[_duration].index];
         require(depositInfo.depositor == msg.sender, "Unauthorized withdrawal");
         require(depositInfo.amount > 0, "empty amount");
         require(block.timestamp >= depositInfo.timestamp + (depositInfo.duration * period), "Deposit is not matured yet");

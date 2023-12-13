@@ -3,3 +3,8 @@
 .hypothesis/
 build/
 reports/
+artifacts
+.openzeppelin
+.vscode
+cache
+node_modules/
