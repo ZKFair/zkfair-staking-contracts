@@ -36,13 +36,10 @@ contract ZKFRewardContract is OwnableUpgradeable {
         _;
     }
 
-    constructor(address _proposalAuthority, address _reviewAuthority, address _rewardSponsor) onlyValidAddress(_proposalAuthority) onlyValidAddress(_reviewAuthority) onlyValidAddress(_rewardSponsor) {
+    function initialize(address _proposalAuthority, address _reviewAuthority, address _rewardSponsor)  onlyValidAddress(_proposalAuthority) onlyValidAddress(_reviewAuthority) onlyValidAddress(_rewardSponsor)  external virtual initializer {
         proposalAuthority = _proposalAuthority;
         reviewAuthority = _reviewAuthority;
         rewardSponsor = _rewardSponsor;
-    }
-
-    function initialize() external virtual initializer {
         // Initialize OZ contracts
         __Ownable_init_unchained();
     }

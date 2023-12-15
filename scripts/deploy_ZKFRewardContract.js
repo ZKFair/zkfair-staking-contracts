@@ -21,24 +21,23 @@ async function main() {
     ZKFRewardContract = await upgrades.deployProxy(
       ZKFRewardContractFactory,
       [
-      ],
-      {
-      constructorArgs: [
         process.env.PROPOSAL_AUTHORITY,
         process.env.REVIEW_AUTHORITY,
         process.env.REWARD_SPONSOR,
       ],
-      unsafeAllow: ['constructor', 'state-variable-immutable'],
-    });
-    console.log('tx hash:', ZKFRewardContract.deploymentTransaction().hash);
+      {
+      }
+    );
+    console.log('tx hash:', ZKFRewardContract.deployTransaction.hash);
   } else {
     ZKFRewardContract = ZKFRewardContractFactory.attach(deployOutput.ZKFRewardContract);
   }
 
-  deployOutput.ZKFRewardContract = ZKFRewardContract.target;
+  deployOutput.ZKFRewardContract = ZKFRewardContract.address;
   fs.writeFileSync(pathOutputJson, JSON.stringify(deployOutput, null, 1));
   console.log('#######################\n');
-  console.log('ZKFRewardContract deployed to:', ZKFRewardContract.target);
+  console.log(await ZKFRewardContract.rewardSponsor(), process.env.REWARD_SPONSOR)
+  console.log('ZKFRewardContract deployed to:', ZKFRewardContract.address);
 }
 
 main().catch((error) => {

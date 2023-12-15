@@ -35,7 +35,7 @@ contract StakingContract is OwnableUpgradeable {
     event Withdraw(address indexed depositor, uint256 indexed duration, uint256 amount, uint256 nonce);
     event UpdateWeight(address indexed depositor, uint256 indexed unaffectedWeight, uint256 indexed depositorWeight, uint256 timestamp);
 
-    constructor(address _tokenAddress) {
+    function initialize(address _tokenAddress) external virtual initializer {
         token = IERC20(_tokenAddress);
         durations[1] = Duration({index: 1, coefficient: 1});
         durations[7] = Duration({index: 2, coefficient: 4});
@@ -45,9 +45,6 @@ contract StakingContract is OwnableUpgradeable {
         durations[360] = Duration({index: 6, coefficient: 256});
         durations[720] = Duration({index: 7, coefficient: 512});
         durations[1440] = Duration({index: 8, coefficient: 1024});
-    }
-
-    function initialize() external virtual initializer {
         // Initialize OZ contracts
         __Ownable_init_unchained();
     }

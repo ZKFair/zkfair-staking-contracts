@@ -23,22 +23,18 @@ async function main() {
     stakingContract = await upgrades.deployProxy(
       stakingContractFactory,
       [
-      ],
-      {
-      constructorArgs: [
         process.env.TOKEN_ADDRESS,
       ],
-      unsafeAllow: ['constructor', 'state-variable-immutable'],
-    });
-    console.log('tx hash:', stakingContract.deploymentTransaction().hash);
+    );
+    console.log('tx hash:', stakingContract.deployTransaction.hash);
   } else {
     stakingContract = stakingContractFactory.attach(deployOutput.stakingContract);
   }
 
-  deployOutput.stakingContract = stakingContract.target;
+  deployOutput.stakingContract = stakingContract.address;
   fs.writeFileSync(pathOutputJson, JSON.stringify(deployOutput, null, 1));
   console.log('#######################\n');
-  console.log('StakingContract deployed to:', stakingContract.target);
+  console.log('StakingContract deployed to:', stakingContract.address);
 }
 
 main().catch((error) => {
