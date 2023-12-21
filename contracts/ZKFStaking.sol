@@ -35,6 +35,10 @@ contract StakingContract is OwnableUpgradeable {
     event Withdraw(address indexed depositor, uint256 indexed duration, uint256 amount, uint256 nonce);
     event UpdateWeight(address indexed depositor, uint256 indexed unaffectedWeight, uint256 indexed depositorWeight, uint256 timestamp);
 
+    constructor() {
+        _disableInitializers();
+    }
+
     function initialize(address _tokenAddress) external virtual initializer {
         token = IERC20(_tokenAddress);
         durations[1] = Duration({index: 1, coefficient: 1});
