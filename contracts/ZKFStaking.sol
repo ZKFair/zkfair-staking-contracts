@@ -116,18 +116,22 @@ contract StakingContract is OwnableUpgradeable {
         require(depositInfo.depositor == msg.sender, "Unauthorized withdrawal");
         require(depositInfo.amount > 0, "empty amount");
         require(block.timestamp >= depositInfo.timestamp + (depositInfo.duration * period), "Deposit is not matured yet");
-
-        deposits[msg.sender][0].amount -= depositInfo.amount;
-        deposits[msg.sender][0].timestamp = block.timestamp;
-        weights[msg.sender][0].accountWeight -= _calculateWeight(depositInfo.amount, depositInfo.duration);
+        uint256 depositAmount = depositInfo.amount;
+        uint256 depositNonce = depositInfo.nonce;
 
         delete deposits[msg.sender][durations[_duration].index];
         delete weights[msg.sender][durations[_duration].index];
+
+        deposits[msg.sender][0].amount -= depositAmount;
+        deposits[msg.sender][0].timestamp = block.timestamp;
+        weights[msg.sender][0].accountWeight -= _calculateWeight(depositAmount, _duration);
+
         uint256 unaffectedWeight = calculateDepositorWeight(msg.sender);
         bool result = token.transfer(msg.sender, depositInfo.amount);
         require(result, 'ZKFStaking: ZKF transfer failed.');
-        emit Withdraw(depositInfo.depositor, _duration, depositInfo.amount, depositInfo.nonce);
+        emit Withdraw(msg.sender, _duration, depositAmount, depositNonce);
         emit UpdateWeight(msg.sender, unaffectedWeight, weights[msg.sender][0].accountWeight, block.timestamp);
     }
+
 
 }
