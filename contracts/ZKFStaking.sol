@@ -129,7 +129,7 @@ contract StakingContract is OwnableUpgradeable, Pausable {
         deposits[msg.sender][0].amount -= depositAmount;
         deposits[msg.sender][0].timestamp = block.timestamp;
 
-        uint256 decreaseWeight = _calculateWeight(depositAmount, _duration);
+        uint256 decreasedWeight = _calculateWeight(depositAmount, _duration);
 
         weights[msg.sender][0].accountWeight -= decreasedWeight;
         totalStakedWeight -= decreasedWeight;
