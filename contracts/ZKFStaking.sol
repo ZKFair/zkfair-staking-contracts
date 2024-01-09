@@ -2,9 +2,10 @@
 pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract StakingContract is OwnableUpgradeable {
+contract StakingContract is OwnableUpgradeable, Pausable {
 
     struct DepositInfo {
         address depositor;
@@ -67,7 +68,7 @@ contract StakingContract is OwnableUpgradeable {
     }
 
 
-    function deposit(uint256 _duration, uint256 _amount) external {
+    function deposit(uint256 _duration, uint256 _amount) external whenNotPaused {
         require(durations[_duration].index != 0, "Invalid duration");
         require(_amount > 0, "Amount must be greater than 0");
 
@@ -113,7 +114,7 @@ contract StakingContract is OwnableUpgradeable {
         emit UpdateWeight(msg.sender, unaffectedWeight, totalWeight.accountWeight, block.timestamp);
     }
 
-    function withdraw(uint256 _duration) external {
+    function withdraw(uint256 _duration) external whenNotPaused {
         require(durations[_duration].index != 0, "Invalid duration");
         DepositInfo memory depositInfo = deposits[msg.sender][durations[_duration].index];
         require(depositInfo.depositor == msg.sender, "Unauthorized withdrawal");
