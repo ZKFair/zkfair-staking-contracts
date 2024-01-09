@@ -140,5 +140,11 @@ contract StakingContract is OwnableUpgradeable, Pausable {
         emit UpdateWeight(msg.sender, unaffectedWeight, weights[msg.sender][0].accountWeight, block.timestamp);
     }
 
+    function pause() public onlyOwner {
+        _pause();
+    }
 
+    function unpause() public onlyOwner {
+        _unpause();
+    }
 }
