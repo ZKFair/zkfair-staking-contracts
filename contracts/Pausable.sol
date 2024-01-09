@@ -86,7 +86,7 @@ abstract contract Pausable {
      */
     function _pause() internal virtual whenNotPaused {
         _paused = true;
-        emit Paused(_msgSender());
+        emit Paused(msg.sender);
     }
 
     /**
@@ -98,6 +98,6 @@ abstract contract Pausable {
      */
     function _unpause() internal virtual whenPaused {
         _paused = false;
-        emit Unpaused(_msgSender());
+        emit Unpaused(msg.sender);
     }
 }
