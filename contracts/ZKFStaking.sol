@@ -87,7 +87,7 @@ contract StakingContract is OwnableUpgradeable, Pausable {
             nonce: totalDepositInfo.nonce + 1
         });
         totalWeight.accountWeight -= weight.accountWeight;
-        totalStakedWeight -= totalWeight.accountWeight;
+        totalStakedWeight -= weight.accountWeight;
         depositInfo = DepositInfo({
             depositor: msg.sender,
             amount: _amount + depositInfo.amount,
@@ -103,7 +103,7 @@ contract StakingContract is OwnableUpgradeable, Pausable {
 
         totalWeight.accountWeight += weight.accountWeight;
         totalWeight.update_at = block.timestamp;
-        totalStakedWeight += totalWeight.accountWeight;
+        totalStakedWeight += weight.accountWeight;
 
         deposits[msg.sender][0] = totalDepositInfo;
         deposits[msg.sender][durations[_duration].index] = depositInfo;
